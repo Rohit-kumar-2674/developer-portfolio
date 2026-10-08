@@ -1,0 +1,11 @@
+import { StrictMode } from 'react';
+import { hydrateRoot, createRoot } from 'react-dom/client';
+import { BrowserRouter } from 'react-router-dom';
+import '@fontsource-variable/inter/wght.css';
+import '@fontsource-variable/space-grotesk/wght.css';
+import '@fontsource/jetbrains-mono/latin-400.css';
+import './styles/global.css';
+import App from './App';
+const root=document.getElementById('root')!;
+const app=<StrictMode><BrowserRouter basename={import.meta.env.BASE_URL}><App/></BrowserRouter></StrictMode>;
+if(root.childElementCount)hydrateRoot(root,app);else createRoot(root).render(app);

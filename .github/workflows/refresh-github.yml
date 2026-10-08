@@ -1,0 +1,13 @@
+name: Daily GitHub refresh
+on:
+  schedule:
+    - cron: '23 3 * * *'
+  workflow_dispatch:
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+jobs:
+  refresh-and-publish:
+    uses: ./.github/workflows/deploy.yml
+    secrets: inherit

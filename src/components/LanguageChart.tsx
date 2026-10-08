@@ -1,0 +1,7 @@
+import { languageTotals, languageColors } from '../lib/projects';
+import { data } from '../data';
+export default function LanguageChart() {
+  const languages=languageTotals(data.repositories);const total=languages.reduce((n,[,bytes])=>n+bytes,0);
+  const colors=['#6da9ff','#9b8cff','#80c9ad','#f5cf69','#dc90d4','#f39179'];
+  return <div className="language-panel"><div className="donut-wrap"><svg viewBox="0 0 160 160" role="img" aria-label="Language distribution by code bytes"><circle cx="80" cy="80" r="61" fill="none" stroke="var(--border)" strokeWidth="17"/>{languages.map(([name,bytes],i)=>{const percent=bytes/total*100;const dash=percent*3.8327;const start=languages.slice(0,i).reduce((n,[,b])=>n+b/total*383.27,0);return <circle key={name} cx="80" cy="80" r="61" fill="none" stroke={languageColors[name]||colors[i%colors.length]} strokeWidth="17" strokeDasharray={`${dash} ${383.27-dash}`} strokeDashoffset={-start} transform="rotate(-90 80 80)"/>;})}</svg><div className="donut-label"><strong>{languages.length}</strong><span>languages</span></div></div><div className="language-legend">{languages.map(([name,bytes],i)=><div key={name}><span><i style={{background:languageColors[name]||colors[i%colors.length]}}/>{name}</span><b>{(bytes/total*100).toFixed(1)}%</b></div>)}</div><p className="data-caption full-width">Share of code bytes reported by GitHub. This measures repository composition, not proficiency.</p></div>;
+}

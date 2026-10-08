@@ -1,0 +1,21 @@
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { createGitHubClient, GitHubError } from '../src/lib/github';
+import { normalizeRepository, normalizeEvents, redact, deriveTechnologies } from '../scripts/normalize';
+import { filterProjects, stats, safeUrl } from '../src/lib/projects';
+const raw={id:1,name:'example',full_name:'owner/example',private:false,visibility:'public',owner:{login:'owner'},html_url:'https://github.com/owner/example',description:null,language:null,topics:[],created_at:'2026-01-01T00:00:00Z',updated_at:'2026-01-01T00:00:00Z',pushed_at:'2026-01-01T00:00:00Z',default_branch:'main'};
+test('API lists only public owned repositories, including across pages',async()=>{
+  let calls=0;const fetcher:typeof fetch=async()=>{calls++;return new Response(JSON.stringify(calls===1?[...Array.from({length:98},(_,i)=>({...raw,id:i})),{...raw,private:true},{...raw,owner:{login:'someone-else'}}]:[{...raw,id:100}]),{status:200});};
+  const list=await createGitHubClient({fetcher}).getRepositories('owner');assert.equal(list.length,99);assert.equal(calls,2);assert.ok(list.every(r=>r.private===false));
+});
+test('private normalization is rejected',()=>assert.throws(()=>normalizeRepository({...raw,private:true}),/Private/));
+test('missing optional fields remain honest and searchable',()=>{const r=normalizeRepository(raw);assert.equal(r.watchers,null);assert.equal(r.license,null);assert.equal(r.demoUrl,null);assert.equal(r.readme,null);assert.deepEqual(stats([r]),{repositories:1,stars:0,forks:0,languages:0,licensed:0});assert.equal(filterProjects([r],'example').length,1);assert.equal(filterProjects([r],'missing').length,0);});
+test('watchers never reuse the stars count',()=>assert.equal(normalizeRepository({...raw,stargazers_count:10,watchers_count:10}).watchers,null));
+test('403 and 429 produce clear rate-limit errors',async()=>{for(const status of [403,429]){const api=createGitHubClient({fetcher:async()=>new Response('{}',{status,headers:{'x-ratelimit-reset':'123'}})});await assert.rejects(()=>api.getUser('owner'),(e:unknown)=>e instanceof GitHubError&&e.status===status&&e.resetAt==='123');}});
+test('404 and offline are recoverable errors, never fake values',async()=>{await assert.rejects(()=>createGitHubClient({fetcher:async()=>new Response('{}',{status:404})}).getReadme('owner','missing'),/not found/);await assert.rejects(()=>createGitHubClient({fetcher:async()=>{throw new TypeError('offline');}}).getRepositories('owner'),/offline/);});
+test('temporary server errors retry and recover',async()=>{let n=0;const api=createGitHubClient({fetcher:async()=>++n<2?new Response('{}',{status:503}):new Response('{"login":"owner"}',{status:200})});assert.equal((await api.getUser('owner')).login,'owner');assert.equal(n,2);});
+test('technology labels require manifests or source evidence',()=>{const t=deriveTechnologies({Python:100},['.github/workflows/ci.yml'],{'frontend/package.json':'{"dependencies":{"react":"19","vite":"8"}}'});assert.ok(t.technologies.includes('React'));assert.ok(!t.technologies.includes('Next.js'));assert.ok(!t.technologies.includes('PostgreSQL'));});
+test('event feed excludes private and unrelated repositories',()=>{const e={id:'1',type:'PushEvent',repo:{name:'owner/example'},public:true,created_at:raw.created_at};const events=normalizeEvents([e,{...e,public:false},{...e,repo:{name:'owner/hidden'}}],new Set(['owner/example']));assert.equal(events.length,1);});
+test('untrusted URL schemes and embedded credentials are rejected',()=>{for(const u of ['javascript:alert(1)','data:text/html,x','https://name:secret@example.com','http://example.com'])assert.equal(safeUrl(u),null);assert.equal(safeUrl('https://example.com'),'https://example.com/');});
+test('email addresses and token patterns are removed from documentation',()=>{assert.equal(redact('Contact test@example.com'),'Contact [email omitted]');assert.ok(!redact('ghp_'+'a'.repeat(30)).includes('ghp_'));});
+test('archived projects are labeled and excluded from featured selection',()=>{const r=normalizeRepository({...raw,name:'trendforge-ai',archived:true});assert.equal(r.featured,0);assert.equal(r.status,'Archived');});

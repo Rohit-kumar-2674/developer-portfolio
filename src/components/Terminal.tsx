@@ -1,0 +1,8 @@
+import { useState } from 'react';
+import { data } from '../data';
+import { PROFILE_URL } from '../lib/projects';
+export default function Terminal() {
+  const [input,setInput]=useState('');const [history,setHistory]=useState<string[]>(['Welcome to the workbench. Type help to explore.']);
+  function execute(e:React.SubmitEvent<HTMLFormElement>) { e.preventDefault();const cmd=input.trim().toLowerCase();setInput('');if(cmd==='clear'){setHistory([]);return;}const answers:Record<string,string>={help:'Commands: projects · github · skills · about · clear',projects:data.repositories.filter(r=>r.featured).map(r=>r.displayName).join(' / ')||'GitHub data temporarily unavailable.',github:PROFILE_URL,skills:[...new Set(data.repositories.flatMap(r=>r.technologies))].slice(0,12).join(' · '),about:'Useful software. Transparent systems. Reproducible work.'};setHistory(h=>[...h,`$ ${cmd}`,answers[cmd]||`Command not found: ${cmd}. Type help.`].slice(-12)); }
+  return <div className="terminal"><div className="terminal-bar"><div aria-hidden="true"><i/><i/><i/></div><span>rohit / workbench</span><span>zsh</span></div><div className="terminal-output" aria-live="polite" aria-label="Terminal output">{history.map((line,i)=><p className={line.startsWith('$')?'terminal-command':''} key={i}>{line}</p>)}</div><form onSubmit={execute}><span aria-hidden="true">❯</span><label className="sr-only" htmlFor="terminal-command">Terminal command</label><input id="terminal-command" value={input} onChange={e=>setInput(e.target.value)} placeholder="help" autoComplete="off" spellCheck={false}/><button type="submit">Run</button></form></div>;
+}
