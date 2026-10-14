@@ -20,6 +20,10 @@ A work-focused developer portfolio for [Rohit Kumar](https://github.com/Rohit-ku
 - Daily GitHub data refresh, automatic GitHub Pages publishing, and explicit API error states.
 - Self-hosted fonts, optimized WebP assets, per-page SEO, sitemap, structured data, and social previews.
 
+## Current project
+
+The homepage and project index now include **OmniForge AI**, a multimodal AI orchestration platform with a FastAPI backend and Next.js workspace. It is explicitly marked **In development**: local backend checks have passed, while production hosting and live provider verification remain in progress. Its source is currently private. This editorial project summary does not add private repository metadata, README content, activity, or counts to the public GitHub dataset.
+
 ## Stack
 
 React · TypeScript · Vite · Tailwind CSS · React Router · Lucide · react-markdown
