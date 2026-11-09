@@ -37,7 +37,7 @@ export default function RockerShowcase({ compact = false }: { compact?: boolean 
           </div>
           <p className="rocker-editorial-note">
             <LockKeyhole size={16} aria-hidden="true" />
-            Private source · genuine Android emulator screenshots · beta features need device testing.
+            Genuine Android emulator screenshots · beta features need device testing · source status on project page.
           </p>
           <div className="rocker-actions">
             <Link className="button primary rocker-accent-button" to="/rocker/">
