@@ -7,7 +7,7 @@ import { data } from '../src/data';
 const base=process.env.BASE_PATH||'/';
 const site=(process.env.SITE_URL||'https://rohit-kumar-2674.github.io/developer-portfolio').replace(/\/$/,'');
 const html=await readFile('dist/index.html','utf8');
-const routes=['/','/projects/','/github/','/privacy/',...data.repositories.map(r=>`/projects/${r.name}/`)];
+const routes=['/','/projects/','/rocker/','/github/','/privacy/',...data.repositories.map(r=>`/projects/${r.name}/`)];
 const escape=(s:string)=>s.replaceAll('&','&amp;').replaceAll('"','&quot;').replaceAll('<','&lt;').replaceAll('>','&gt;');
 async function render(route:string):Promise<string>{
   return new Promise((resolve,reject)=>{
@@ -18,11 +18,11 @@ async function render(route:string):Promise<string>{
 }
 for(const route of [...routes,'/404/']){
   const repo=data.repositories.find(r=>route===`/projects/${r.name}/`);
-  const title=repo?`${repo.displayName} — Rohit Kumar`:route==='/projects/'?'Projects — Rohit Kumar':route==='/github/'?'GitHub Activity — Rohit Kumar':route==='/privacy/'?'Privacy & Data — Rohit Kumar':route==='/404/'?'Page Not Found — Rohit Kumar':'Rohit Kumar — Developer & Open-source Builder';
-  const description=repo?.readmeSummary||repo?.description||'Useful software, intelligent tools, and open-source projects. Explore Rohit Kumar’s public GitHub work, technologies, and development activity.';
+  const title=route==='/rocker/'?'ROCKER Android Player — Rohit Kumar':repo?`${repo.displayName} — Rohit Kumar`:route==='/projects/'?'Projects — Rohit Kumar':route==='/github/'?'GitHub Activity — Rohit Kumar':route==='/privacy/'?'Privacy & Data — Rohit Kumar':route==='/404/'?'Page Not Found — Rohit Kumar':'Rohit Kumar — Developer & Open-source Builder';
+  const description=route==='/rocker/'?'ROCKER Android music and video player: Kotlin, Jetpack Compose, Media3, folder playback, subtitles and dynamic themes. Real screenshots; beta APK built.':repo?.readmeSummary||repo?.description||'Useful software, intelligent tools, and open-source projects. Explore Rohit Kumar’s public GitHub work, technologies, and development activity.';
   const canonical=`${site}${route}`;
-  const structured=repo?{'@context':'https://schema.org','@type':'SoftwareSourceCode',name:repo.displayName,description,codeRepository:repo.url,programmingLanguage:Object.keys(repo.languages),url:canonical,author:{'@type':'Person',name:'Rohit Kumar',url:`${site}/`}}:{'@context':'https://schema.org','@type':'ProfilePage',url:canonical,mainEntity:{'@type':'Person',name:'Rohit Kumar',jobTitle:'Developer and open-source builder',url:`${site}/`,sameAs:[data.user.url],image:`${site}/profile-512.webp`}};
-  const preview=repo?.screenshot?`${site}/${repo.screenshot}`:repo?null:`${site}/og-image.png`;
+  const structured=route==='/rocker/'?{'@context':'https://schema.org','@type':'SoftwareApplication',name:'ROCKER',applicationCategory:'MultimediaApplication',operatingSystem:'Android',url:canonical,description,author:{'@type':'Person',name:'Rohit Kumar'}}:repo?{'@context':'https://schema.org','@type':'SoftwareSourceCode',name:repo.displayName,description,codeRepository:repo.url,programmingLanguage:Object.keys(repo.languages),url:canonical,author:{'@type':'Person',name:'Rohit Kumar',url:`${site}/`}}:{'@context':'https://schema.org','@type':'ProfilePage',url:canonical,mainEntity:{'@type':'Person',name:'Rohit Kumar',jobTitle:'Developer and open-source builder',url:`${site}/`,sameAs:[data.user.url],image:`${site}/profile-512.webp`}};
+  const preview=route==='/rocker/'?`${site}/projects/rocker-home.png`:repo?.screenshot?`${site}/${repo.screenshot}`:repo?null:`${site}/og-image.png`;
   const seo=`<link rel="canonical" href="${escape(canonical)}"/><meta property="og:type" content="website"/><meta property="og:title" content="${escape(title)}"/><meta property="og:description" content="${escape(description)}"/><meta property="og:url" content="${escape(canonical)}"/><meta name="twitter:card" content="${preview?'summary_large_image':'summary'}"/><meta name="twitter:title" content="${escape(title)}"/><meta name="twitter:description" content="${escape(description)}"/>${preview?`<meta property="og:image" content="${escape(preview)}"/><meta name="twitter:image" content="${escape(preview)}"/>`:''}<script type="application/ld+json">${JSON.stringify(structured).replaceAll('<','\\u003c')}</script>`;
   const page=html.replace(/<title>[^<]*<\/title>/,`<title>${escape(title)}</title>`).replace(/<meta name="description" content="[^"]*"\s*\/?\s*>/,`<meta name="description" content="${escape(description)}"/>`).replace('<!--seo-->',seo).replace('<!--app-->',await render(route));
   const folder=route==='/404/'?'dist':`dist${route}`;await mkdir(folder,{recursive:true});await writeFile(`${folder}/${route==='/404/'?'404.html':'index.html'}`,page);
