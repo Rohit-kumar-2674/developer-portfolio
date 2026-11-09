@@ -20,6 +20,14 @@ A work-focused developer portfolio for [Rohit Kumar](https://github.com/Rohit-ku
 - Daily GitHub data refresh, automatic GitHub Pages publishing, and explicit API error states.
 - Self-hosted fonts, optimized WebP assets, per-page SEO, sitemap, structured data, and social previews.
 
+## Featured Android project: ROCKER
+
+ROCKER is a native Android music and video player built with Kotlin, Jetpack Compose and Media3. The portfolio now includes a first-class [ROCKER case study](https://rohit-kumar-2674.github.io/developer-portfolio/rocker/) with authentic screenshots captured from the Android app, a crimson-themed feature showcase, and its verified v1.2.0 beta APK build status.
+
+The case study links to the source and v1.2 release **only when the repository is publicly accessible through GitHub's unauthenticated REST API**. Until the repository owner changes its visibility from Private to Public, it remains an editorial showcase and is excluded from the portfolio's public repository metrics. This keeps private code and metadata out of public dataset counts.
+
+The site contains selected, genuine ROCKER UI screenshots that have been expressly copied into the portfolio's public assets; it does not contain private source files or signing keys.
+
 ## Current project
 
 The homepage and project index now include **OmniForge AI**, a multimodal AI orchestration platform with a FastAPI backend and Next.js workspace. It is explicitly marked **In development**: local backend checks have passed, while production hosting and live provider verification remain in progress. Its source is currently private. This editorial project summary does not add private repository metadata, README content, activity, or counts to the public GitHub dataset.
