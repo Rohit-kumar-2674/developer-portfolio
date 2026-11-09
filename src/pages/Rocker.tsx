@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { useEffect, useState } from 'react';
 import { ArrowLeft, ArrowUpRight, BadgeCheck, Captions, Clapperboard, FolderOpen, Headphones, LockKeyhole, Palette, ShieldCheck, Smartphone, Sparkles } from 'lucide-react';
 import { asset } from '../lib/projects';
 
@@ -17,6 +18,19 @@ const features = [
 ];
 
 export default function Rocker() {
+  const [sourcePublic, setSourcePublic] = useState(false);
+  useEffect(() => {
+    let cancelled = false;
+    fetch('https://api.github.com/repos/Rohit-kumar-2674/Rocker', {
+      headers: { Accept: 'application/vnd.github+json' }
+    }).then(async response => {
+      if (response.ok && !cancelled) {
+        const metadata: { private?: boolean } = await response.json();
+        setSourcePublic(metadata.private === false);
+      }
+    }).catch(() => { /* Public status unavailable: keep conservative label */ });
+    return () => { cancelled = true; };
+  }, []);
   return <div className="page rocker-page">
     <Link className="breadcrumb" to="/projects/"><ArrowLeft size={15} /> Projects / <span>ROCKER</span></Link>
     <header className="rocker-detail-hero">
@@ -38,14 +52,28 @@ export default function Rocker() {
         </div>
         <div className="rocker-status-row">
           <span><BadgeCheck size={18}/> v1.2.0-beta.1 APK compiled</span>
-          <span><LockKeyhole size={18}/> Source repository private</span>
+          <span><LockKeyhole size={18}/> {sourcePublic ? 'Public source on GitHub' : 'Source access restricted'}</span>
         </div>
         <p className="rocker-access-note">
-          This is a curated project case study, not a public GitHub repository entry.
-          The GitHub release and source are access-restricted; there is no publicly accessible APK link.
-          Compilation was verified in GitHub Actions, while real-device feature verification remains ongoing.
+          This is an editorial project case study. Source access is checked against GitHub's public API,
+          and private repositories are not counted in public GitHub statistics.
+          Compilation was verified in GitHub Actions; real-device playback testing remains ongoing.
         </p>
-        <Link className="button primary rocker-accent-button" to="/projects/">Explore public projects <ArrowUpRight size={16}/></Link>
+        <div className="rocker-actions">
+          {sourcePublic && <>
+            <a className="button primary rocker-accent-button"
+              href="https://github.com/Rohit-kumar-2674/Rocker/releases/tag/v1.2.0-beta.1"
+              target="_blank" rel="noreferrer">
+              View APK release <ArrowUpRight size={16}/>
+            </a>
+            <a className="button secondary" href="https://github.com/Rohit-kumar-2674/Rocker"
+              target="_blank" rel="noreferrer">
+              Source repository <ArrowUpRight size={16}/>
+            </a>
+          </>}
+          <Link className={`button ${sourcePublic ? 'secondary' : 'primary rocker-accent-button'}`}
+            to="/projects/">Explore public projects <ArrowUpRight size={16}/></Link>
+        </div>
       </div>
       <figure className="rocker-hero-shot">
         <img src={asset('projects/rocker-home.png')} alt="ROCKER Android home screen on the emulator" width="1080" height="1920" />
@@ -90,7 +118,7 @@ export default function Rocker() {
           ROCKER v1.2.0-beta.1 produced an Android debug APK in GitHub Actions. The screenshots above
           were taken from the running app. This verifies buildability and actual UI rendering, not complete
           codec coverage, seamless audio/video transitions on every device, or a production signing setup.
-          Its source remains private and is excluded from the portfolio's public-repository statistics.
+          The public-repository dashboard remains sourced only from GitHub's public API.
         </p>
       </div>
     </section>
